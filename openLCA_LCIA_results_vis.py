@@ -19,3 +19,14 @@ df_transposed = df.transpose()
 # Reset the index of the transposed DataFrame
 df_transposed.reset_index(drop=True, inplace=True)
 
+# Find the column index containing the specified string in row index 1
+target_string = "climate change - global warming potential (GWP100) (Nitrous Oxide, Methane, Carbon Dioxide)"
+column_index = df_transposed.columns[df_transposed.iloc[1] == target_string].tolist()
+
+# If the column is found, retrieve its index; otherwise, return None
+column_index = column_index[0] if column_index else None
+
+# Create a copy of df_transposed with only the specified columns
+columns_to_keep = [0, 1, 2, column_index]
+filtered_df = df_transposed.iloc[:, columns_to_keep]
+
