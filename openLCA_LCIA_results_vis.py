@@ -41,4 +41,5 @@ filtered_df = filtered_df.iloc[4:].reset_index(drop=True)
 
 # Rename the columns of the filtered DataFrame
 filtered_df.columns = ['Process UUID', 'Process', 'Location', 'GWP100_Impact_kg_CO2eq']
+print(filtered_df.head())
 
