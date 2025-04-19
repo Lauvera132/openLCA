@@ -1,6 +1,7 @@
 # Laura Rivera
 
 import pandas as pd
+import os
 
 # Load the Excel file and specify the worksheet name
 file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\Hydrogen_gas__at_processing__production_mixture__to_consumer__kg___US__85__mol_H2____H2_Average___CH4_Capture.xlsx'
@@ -43,3 +44,37 @@ filtered_df = filtered_df.iloc[4:].reset_index(drop=True)
 filtered_df.columns = ['Process UUID', 'Process', 'Location', 'GWP100_Impact_kg_CO2eq']
 print(filtered_df.head())
 
+# Define the folder path containing the Excel files
+folder_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\ecoinvent_391_esther_v2_laura_v1_process_export'
+
+# Initialize an empty list to store data from each file
+data = []
+
+# Iterate through all Excel files in the folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsx'):
+        file_path = os.path.join(folder_path, file_name)
+        
+        # Read the "General information" worksheet
+        try:
+            general_info_df = pd.read_excel(file_path, sheet_name='General information', header=None)
+            
+            # Extract UUID, name, and category
+            uuid = general_info_df.iloc[1, 1]
+            name = general_info_df.iloc[2, 1]
+            category = general_info_df.iloc[3, 1]
+            
+            # Append the extracted data to the list
+            data.append({'UUID': uuid, 'Name': name, 'Category': category})
+        except Exception as e:
+            print(f"Error reading file {file_name}: {e}")
+
+# Create a DataFrame from the collected data
+processes_df = pd.DataFrame(data)
+
+# Display the first few rows of the DataFrame
+print(processes_df.head())
+
+# Optionally, save the DataFrame to a CSV file
+output_file = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\processes_summary.csv'
+processes_df.to_csv(output_file, index=False)
