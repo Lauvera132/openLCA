@@ -43,21 +43,20 @@ filtered_df = filtered_df.iloc[4:].reset_index(drop=True)
 filtered_df.columns = ['Process UUID', 'Process', 'Location', 'GWP100_Impact_kg_CO2eq']
 print(filtered_df.head())
 
-# Read the CSV file into a new DataFrame
-csv_file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\openLCA\processes_summary.csv'
-process_df = pd.read_csv(csv_file_path)
+# Read the database_processes_summary_added file into a new DataFrame
+excel_file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\openLCA\database_process_summary_added.xlsx'
+process_df = pd.read_excel(excel_file_path)
 
 # Display the first few rows of the new DataFrame
 print(process_df.head())
 
-# Split column "category" into multiple columns using "/" as the delimiter
-split_columns = process_df['Category'].str.split('/', expand=True)
+# Split column "ISIC_Category" into multiple columns using "/" as the delimiter
+split_columns = process_df['ISIC_Category'].str.split('/', expand=True)
 
 # Rename the new columns for clarity
-split_columns.columns = [f'Category_{i+1}' for i in range(split_columns.shape[1])]
+split_columns.columns = ['ISIC_Category_Section', 'ISIC_Category_Division', 'ISIC_Category_Group', 'ISIC_Category_Class']
 
-# Concatenate the split columns back to the original DataFrame
+# Add the split columns as additional columns to process_df
 process_df = pd.concat([process_df, split_columns], axis=1)
 
-# Display the updated DataFrame
-print(process_df.head())
+

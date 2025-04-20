@@ -44,5 +44,5 @@ processes_df = pd.DataFrame(data)
 print(processes_df.head())
 
 # Save the DataFrame to a CSV file
-output_file = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\openLCA\processes_summary.csv'
+output_file = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\openLCA\database_process_summary.csv'
 processes_df.to_csv(output_file, index=False)
