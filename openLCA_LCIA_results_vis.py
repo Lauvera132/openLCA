@@ -2,6 +2,8 @@
 
 import pandas as pd
 
+product_system = 'Hydrogen_gas__at_processing__production_mixture__to_consumer__kg___US__85__mol_H2____H2_Average___CH4_Capture'
+
 # Load the Excel file and specify the worksheet name
 file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\Hydrogen_gas__at_processing__production_mixture__to_consumer__kg___US__85__mol_H2____H2_Average___CH4_Capture.xlsx'
 sheet_name = 'Direct impact contributions'
@@ -80,3 +82,89 @@ else:
 # Display the updated DataFrame
 print(merged_df.head())
 
+# Convert the GWP100_Impact_kg_CO2eq column to numeric, coercing errors to NaN
+merged_df['GWP100_Impact_kg_CO2eq'] = pd.to_numeric(merged_df['GWP100_Impact_kg_CO2eq'], errors='coerce')
+
+# Drop rows with NaN values in the GWP100_Impact_kg_CO2eq column
+merged_df.dropna(subset=['GWP100_Impact_kg_CO2eq'], inplace=True)
+
+# Identify the top Process_Name with the largest GWP100_Impact_kg_CO2eq
+top_5_processes = merged_df.nlargest(5, 'GWP100_Impact_kg_CO2eq')[['Process_Name', 'GWP100_Impact_kg_CO2eq']]
+top_10_processes = merged_df.nlargest(10, 'GWP100_Impact_kg_CO2eq')[['Process_Name', 'GWP100_Impact_kg_CO2eq']]
+
+# Display the top processes
+print("Top 5 processes with the largest GWP100 impact:")
+print(top_5_processes)
+print("Top 10 processes with the largest GWP100 impact:")
+print(top_10_processes)
+
+import matplotlib.pyplot as plt
+# Group the data by Process_Name and sum the GWP100_Impact_kg_CO2eq for each process
+grouped_data = merged_df.groupby('Process_Name')['GWP100_Impact_kg_CO2eq'].sum()
+
+# Separate processes with less than 0.01 impact and group them into "Other"
+threshold = 0.05
+grouped_data = grouped_data.sort_values(ascending=False)
+other_data = grouped_data[grouped_data < threshold].sum()
+grouped_data = grouped_data[grouped_data >= threshold]
+grouped_data['Other'] = other_data
+
+# Plot the results as a single stacked bar chart with a black background and white lines and font
+plt.figure(figsize=(10, 6))
+plt.style.use('dark_background')  # Set the background to black
+
+# Create a single stacked bar chart
+colors = plt.cm.tab20.colors  # Use a colormap for distinct colors
+plt.bar(
+    x=[product_system], 
+    height=[grouped_data.sum()], 
+    color=colors[:len(grouped_data)], 
+    edgecolor='white'
+)
+
+# Add individual contributions as stacked segments
+bottom = 0
+for i, (process_name, value) in enumerate(grouped_data.items()):
+    plt.bar(
+        x=[product_system], 
+        height=[value], 
+        bottom=[bottom], 
+        color=colors[i % len(colors)], 
+        edgecolor='white', 
+        label=process_name[:25]  # Limit legend to 25 characters
+    )
+    # Add impact numbers to the center of each segment
+    plt.text(
+        x=0, 
+        y=bottom + value / 2, 
+        s=f'{value:.2f}', 
+        ha='center',  # Center horizontally
+        va='center',  # Center vertically
+        color='white', 
+        fontsize=10
+    )
+    bottom += value
+
+# Add total value on top of the bar
+total_value = grouped_data.sum()
+plt.text(0, total_value + 0.01, f'{total_value:.2f}', ha='center', va='bottom', color='white', fontsize=12)
+
+# Add labels, title, and legend
+plt.xlabel('', fontsize=12, color='white')
+plt.ylabel('GWP100 Impact (kg CO2eq)', fontsize=12, color='white')
+plt.title('GWP100 Impact by Process Name', fontsize=14, color='white')
+plt.xticks(color='white')
+plt.yticks(color='white')
+plt.legend(
+    title='Process Name', 
+    fontsize=10, 
+    title_fontsize=12, 
+    loc='center left', 
+    bbox_to_anchor=(1, 0.5),  # Move the legend box to the right of the chart
+    facecolor='black', 
+    edgecolor='white'
+)
+plt.tight_layout()
+
+# Show the plot
+plt.show()
