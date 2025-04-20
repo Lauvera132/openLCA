@@ -102,61 +102,71 @@ import matplotlib.pyplot as plt
 # Group the data by Process_Name and sum the GWP100_Impact_kg_CO2eq for each process
 grouped_data = merged_df.groupby('Process_Name')['GWP100_Impact_kg_CO2eq'].sum()
 
-# Separate processes with less than 0.01 impact and group them into "Other"
+# Separate processes with less than impact threshold and group them into "Other"
 threshold = 0.05
 grouped_data = grouped_data.sort_values(ascending=False)
 other_data = grouped_data[grouped_data < threshold].sum()
 grouped_data = grouped_data[grouped_data >= threshold]
 grouped_data['Other'] = other_data
 
-# Plot the results as a single stacked bar chart with a black background and white lines and font
-plt.figure(figsize=(6, 8))  # Ensure the bar chart is at least 4 inches tall
-plt.style.use('dark_background')  # Set the background to black
+plt.figure(figsize=(12, 5))
+plt.style.use('dark_background')
 
-# Create a horizontal stacked bar chart with segments stacked onto one bar
-colors = plt.cm.tab20.colors  # Use a colormap for distinct colors
-cumulative_width = 0  # Initialize cumulative width for stacking
+colors = plt.cm.tab20.colors
+cumulative_width = 0
+bar_height = 0.3
 
-# Plot each segment of the bar
 for i, (process_name, value) in enumerate(grouped_data.items()):
     plt.barh(
-        y=0,  # Single bar at y=0
-        width=value, 
-        left=cumulative_width,  # Start from the cumulative width
-        color=colors[i % len(colors)],  # Cycle through colors
+        y=0,
+        width=value,
+        left=cumulative_width,
+        height=bar_height,
+        color=colors[i % len(colors)],
         edgecolor='white',
-        label=process_name  # Add label for legend
+        linewidth=2,
+        label=process_name
     )
-    # Add segment impact number to each segment
-    plt.text(
-        x=cumulative_width + value / 2,  # Position at the center of the segment
-        y=0, 
-        s=f'{value:.2f}', 
-        va='center', 
-        ha='center', 
-        color='white', 
-        fontsize=10
-    )
-    cumulative_width += value  # Update cumulative width
+    # Only show text if the segment is wide enough
+    if value > 0.05:
+        plt.text(
+            x=cumulative_width + value / 2,
+            y=0,
+            s=f'{value:.2f}',
+            va='center',
+            ha='center',
+            color='white',
+            fontsize=12,
+            fontweight='bold'
+        )
+    cumulative_width += value
 
-# Add total impact number at the end of the bar
+# Add total at the end, with padding
 plt.text(
-    x=cumulative_width + 0.01, 
-    y=0, 
-    s=f'Total: {cumulative_width:.2f}', 
-    va='center', 
-    ha='left', 
-    color='white', 
-    fontsize=12
+    x=cumulative_width + 0.03 * cumulative_width,
+    y=0,
+    s=f'Total: {cumulative_width:.2f}',
+    va='center',
+    ha='left',
+    color='white',
+    fontsize=13,
+    fontweight='bold'
 )
 
-# Add labels, title, and legend
-plt.xlabel('GWP100 Impact (kg CO2eq per kg H2)', fontsize=12, color='white')
-plt.title(product_system, fontsize=14, color='white')
-plt.xticks(color='white')
-plt.yticks([])  # Remove y-axis ticks since it's a single bar
-plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.2), ncol=3, fontsize=10, frameon=False)
-plt.tight_layout()
+plt.xlabel('GWP100 Impact (kg CO2eq per kg H2)', fontsize=13, color='white')
+plt.title(product_system, fontsize=14, color='white', pad=15, wrap=True)
+plt.xticks(color='white', fontsize=11)
+plt.yticks([])
 
-# Show the plot
+plt.xlim(0, cumulative_width * 1.12)
+
+plt.legend(
+    loc='upper center',
+    bbox_to_anchor=(0.5, -0.2),
+    ncol=1,
+    fontsize=11,
+    frameon=False
+)
+
+plt.tight_layout(pad=2)
 plt.show()
