@@ -42,3 +42,22 @@ filtered_df = filtered_df.iloc[4:].reset_index(drop=True)
 # Rename the columns of the filtered DataFrame
 filtered_df.columns = ['Process UUID', 'Process', 'Location', 'GWP100_Impact_kg_CO2eq']
 print(filtered_df.head())
+
+# Read the CSV file into a new DataFrame
+csv_file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\openLCA\processes_summary.csv'
+process_df = pd.read_csv(csv_file_path)
+
+# Display the first few rows of the new DataFrame
+print(process_df.head())
+
+# Split column "category" into multiple columns using "/" as the delimiter
+split_columns = process_df['Category'].str.split('/', expand=True)
+
+# Rename the new columns for clarity
+split_columns.columns = [f'Category_{i+1}' for i in range(split_columns.shape[1])]
+
+# Concatenate the split columns back to the original DataFrame
+process_df = pd.concat([process_df, split_columns], axis=1)
+
+# Display the updated DataFrame
+print(process_df.head())
