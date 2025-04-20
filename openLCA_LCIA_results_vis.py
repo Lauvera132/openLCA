@@ -110,60 +110,52 @@ grouped_data = grouped_data[grouped_data >= threshold]
 grouped_data['Other'] = other_data
 
 # Plot the results as a single stacked bar chart with a black background and white lines and font
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(6, 8))  # Ensure the bar chart is at least 4 inches tall
 plt.style.use('dark_background')  # Set the background to black
 
-# Create a single stacked bar chart
+# Create a horizontal stacked bar chart with segments stacked onto one bar
 colors = plt.cm.tab20.colors  # Use a colormap for distinct colors
-plt.bar(
-    x=[product_system], 
-    height=[grouped_data.sum()], 
-    color=colors[:len(grouped_data)], 
-    edgecolor='white'
-)
+cumulative_width = 0  # Initialize cumulative width for stacking
 
-# Add individual contributions as stacked segments
-bottom = 0
+# Plot each segment of the bar
 for i, (process_name, value) in enumerate(grouped_data.items()):
-    plt.bar(
-        x=[product_system], 
-        height=[value], 
-        bottom=[bottom], 
-        color=colors[i % len(colors)], 
-        edgecolor='white', 
-        label=process_name[:25]  # Limit legend to 25 characters
+    plt.barh(
+        y=0,  # Single bar at y=0
+        width=value, 
+        left=cumulative_width,  # Start from the cumulative width
+        color=colors[i % len(colors)],  # Cycle through colors
+        edgecolor='white',
+        label=process_name  # Add label for legend
     )
-    # Add impact numbers to the center of each segment
+    # Add segment impact number to each segment
     plt.text(
-        x=0, 
-        y=bottom + value / 2, 
+        x=cumulative_width + value / 2,  # Position at the center of the segment
+        y=0, 
         s=f'{value:.2f}', 
-        ha='center',  # Center horizontally
-        va='center',  # Center vertically
+        va='center', 
+        ha='center', 
         color='white', 
         fontsize=10
     )
-    bottom += value
+    cumulative_width += value  # Update cumulative width
 
-# Add total value on top of the bar
-total_value = grouped_data.sum()
-plt.text(0, total_value + 0.01, f'{total_value:.2f}', ha='center', va='bottom', color='white', fontsize=12)
+# Add total impact number at the end of the bar
+plt.text(
+    x=cumulative_width + 0.01, 
+    y=0, 
+    s=f'Total: {cumulative_width:.2f}', 
+    va='center', 
+    ha='left', 
+    color='white', 
+    fontsize=12
+)
 
 # Add labels, title, and legend
-plt.xlabel('', fontsize=12, color='white')
-plt.ylabel('GWP100 Impact (kg CO2eq)', fontsize=12, color='white')
-plt.title('GWP100 Impact by Process Name', fontsize=14, color='white')
+plt.xlabel('GWP100 Impact (kg CO2eq per kg H2)', fontsize=12, color='white')
+plt.title(product_system, fontsize=14, color='white')
 plt.xticks(color='white')
-plt.yticks(color='white')
-plt.legend(
-    title='Process Name', 
-    fontsize=10, 
-    title_fontsize=12, 
-    loc='center left', 
-    bbox_to_anchor=(1, 0.5),  # Move the legend box to the right of the chart
-    facecolor='black', 
-    edgecolor='white'
-)
+plt.yticks([])  # Remove y-axis ticks since it's a single bar
+plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.2), ncol=3, fontsize=10, frameon=False)
 plt.tight_layout()
 
 # Show the plot
