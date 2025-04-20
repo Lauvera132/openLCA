@@ -26,7 +26,7 @@ for file_name in os.listdir(folder_path):
             category = general_info_df.iloc[3, 1]
             
             # Append the extracted data to the list
-            data.append({'UUID': uuid, 'Name': name, 'Category': category})
+            data.append({'Process_UUID': uuid, 'Process_Name': name, 'ISIC_Category': category})
             
             # Increment the file counter
             file_counter += 1

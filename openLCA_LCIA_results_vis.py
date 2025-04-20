@@ -40,7 +40,7 @@ print(f"Impact category reference unit: {impact_category_reference_unit}")
 filtered_df = filtered_df.iloc[4:].reset_index(drop=True)
 
 # Rename the columns of the filtered DataFrame
-filtered_df.columns = ['Process UUID', 'Process', 'Location', 'GWP100_Impact_kg_CO2eq']
+filtered_df.columns = ['Process_UUID', 'Process_Name', 'Location', 'GWP100_Impact_kg_CO2eq']
 print(filtered_df.head())
 
 # Read the database_processes_summary_added file into a new DataFrame
@@ -59,4 +59,24 @@ split_columns.columns = ['ISIC_Category_Section', 'ISIC_Category_Division', 'ISI
 # Add the split columns as additional columns to process_df
 process_df = pd.concat([process_df, split_columns], axis=1)
 
+# Merge the filtered DataFrame with the process_df DataFrame on the "Process UUID" column
+merged_df = pd.merge(filtered_df, process_df, on='Process_UUID', how='inner')
+
+# Display the first few rows of the merged DataFrame
+print(merged_df.head())
+
+# Check if the "Process_Name" column exists in both DataFrames after the merge
+if 'Process_Name_x' in merged_df.columns and 'Process_Name_y' in merged_df.columns:
+    # Check if the "Process_Name" columns match in both DataFrames
+    if (merged_df['Process_Name_x'] == merged_df['Process_Name_y']).all():
+        # Drop one of the "Process_Name" columns and rename the other to "Process_Name"
+        merged_df.drop(columns=['Process_Name_y'], inplace=True)
+        merged_df.rename(columns={'Process_Name_x': 'Process_Name'}, inplace=True)
+    else:
+        print("Warning: Process_Name columns do not match completely.")
+else:
+    print("Error: Process_Name columns are missing in the merged DataFrame.")
+
+# Display the updated DataFrame
+print(merged_df.head())
 
