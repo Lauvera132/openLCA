@@ -109,6 +109,9 @@ other_data = grouped_data[grouped_data < threshold].sum()
 grouped_data = grouped_data[grouped_data >= threshold]
 grouped_data['Other'] = other_data
 
+##### Plotting #####
+# Create a horizontal bar plot
+
 plt.figure(figsize=(12, 5))
 plt.style.use('dark_background')
 
