@@ -7,32 +7,36 @@ product_system = 'GeoH2 (85% mol H2; H2 Average Fugitive; CH4 Capture)'
 
 # Load the Excel file and specify the worksheet name
 lca_results_file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\Hydrogen_gas__at_processing__production_mixture__to_consumer__kg___US__85__mol_H2____H2_Average___CH4_Capture.xlsx'
-sheet_name = 'Direct impact contributions'
+direct_impact_sheet_name = 'Direct impact contributions'
+impact_by_flow_sheet_name = 'Impact contributions by flow'
 
 # Read the specified worksheet into a DataFrame
-df = pd.read_excel(lca_results_file_path, sheet_name=sheet_name)
+df_process_impact = pd.read_excel(lca_results_file_path, sheet_name=direct_impact_sheet_name)
+df_flows_impact = pd.read_excel(lca_results_file_path, sheet_name=impact_by_flow_sheet_name)
 
 # Drop the first column if it contains only empty values
-if df.iloc[:, 0].isnull().all():
-    df.drop(df.columns[0], axis=1, inplace=True)
+if df_process_impact.iloc[:, 0].isnull().all():
+    df_process_impact.drop(df_process_impact.columns[0], axis=1, inplace=True)
 
 # Transpose the DataFrame
-df_transposed = df.transpose()
+df_process_impact_transposed = df_process_impact.transpose()
 
 # Reset the index of the transposed DataFrame
-df_transposed.reset_index(drop=True, inplace=True)
+df_process_impact_transposed.reset_index(drop=True, inplace=True)
 
 # Find the column index containing the specified string in row index 1
 impact_category_name = "climate change - global warming potential (GWP100) (Nitrous Oxide, Methane, Carbon Dioxide)"
 print(f"Impact category name: {impact_category_name}")
-column_index = df_transposed.columns[df_transposed.iloc[1] == impact_category_name].tolist()
+process_column_index = df_process_impact_transposed.columns[df_process_impact_transposed.iloc[1] == impact_category_name].tolist()
+
 
 # If the column is found, retrieve its index; otherwise, return None
-column_index = column_index[0] if column_index else None
+process_column_index = process_column_index[0] if process_column_index else None
 
-# Create a copy of df_transposed with only the specified columns
-columns_to_keep = [0, 1, 2, column_index]
-filtered_df = df_transposed.iloc[:, columns_to_keep]
+
+# Create a copy of df_process_impact_transposed with only the specified columns
+columns_to_keep = [0, 1, 2, process_column_index]
+filtered_df = df_process_impact_transposed.iloc[:, columns_to_keep]
 
 impact_category_uuid = filtered_df.iloc[0, 3]
 impact_category_reference_unit = filtered_df.iloc[2, 3]
@@ -47,23 +51,23 @@ filtered_df.columns = ['Process_UUID', 'Process_Name', 'Location', 'GWP100_Impac
 print(filtered_df.head())
 
 # Read the database_processes_summary_added file into a new DataFrame
-excel_file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\openLCA\database_process_summary_added.xlsx'
-process_df = pd.read_excel(excel_file_path)
+database_process_summary_file_path = r'C:\Users\laura\OneDrive\Documents\UT_graduate\WEG_graduate_research\Hydrogen_fugitive_emissions_natural_h2\openLCA_ecoinvent\openLCA\database_process_summary_added.xlsx'
+database_process_df = pd.read_excel(database_process_summary_file_path)
 
 # Display the first few rows of the new DataFrame
-print(process_df.head())
+print(database_process_df.head())
 
 # Split column "ISIC_Category" into multiple columns using "/" as the delimiter
-split_columns = process_df['ISIC_Category'].str.split('/', expand=True)
+split_columns = database_process_df['ISIC_Category'].str.split('/', expand=True)
 
 # Rename the new columns for clarity
 split_columns.columns = ['ISIC_Category_Section', 'ISIC_Category_Division', 'ISIC_Category_Group', 'ISIC_Category_Class']
 
-# Add the split columns as additional columns to process_df
-process_df = pd.concat([process_df, split_columns], axis=1)
+# Add the split columns as additional columns to database_process_df
+database_process_df = pd.concat([database_process_df, split_columns], axis=1)
 
-# Merge the filtered DataFrame with the process_df DataFrame on the "Process UUID" column
-merged_df = pd.merge(filtered_df, process_df, on='Process_UUID', how='inner')
+# Merge the filtered DataFrame with the database_process_df DataFrame on the "Process UUID" column
+merged_df = pd.merge(filtered_df, database_process_df, on='Process_UUID', how='inner')
 
 # Display the first few rows of the merged DataFrame
 print(merged_df.head())
